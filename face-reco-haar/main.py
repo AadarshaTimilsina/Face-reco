@@ -16,6 +16,7 @@ facecascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontal
 
 name = input('Enter your name --> ')
 ret = True
+data_limit = 100  # Set the limit to 100 data points
 
 while (ret):
     ret, frame = camera.read()
@@ -28,14 +29,14 @@ while (ret):
             faces = frame[b:b + h, a:a + w, :]
             resized_faces = cv2.resize(faces, (50, 50))
 
-            if i % 10 == 0 and len(face_data) < 10:
+            if i % 10 == 0 and len(face_data) < data_limit:  # Store every 10th frame up to the limit
                 face_data.append(resized_faces)
             cv2.rectangle(frame, (a, b), (a + w, b + h), (255, 0, 0), 2)
         i += 1
 
         cv2.imshow('frames', frame)
 
-        if cv2.waitKey(1) == 27 or len(face_data) >= 10:
+        if cv2.waitKey(1) == 27 or len(face_data) >= data_limit:  # Exit when 'Esc' is pressed or data limit is reached
             break
     else:
         print('error')
@@ -45,17 +46,17 @@ cv2.destroyAllWindows()
 camera.release()
 
 face_data = np.asarray(face_data)
-face_data = face_data.reshape(10, -1)
+face_data = face_data.reshape(len(face_data), -1)
 
 if 'names.pkl' not in os.listdir('data/'):
-    names = [name] * 10
+    names = [name] * len(face_data)
     with open('data/names.pkl', 'wb') as file:
         pickle.dump(names, file)
 else:
     with open('data/names.pkl', 'rb') as file:
         names = pickle.load(file)
 
-    names = names + [name] * 10
+    names = names + [name] * len(face_data)
     with open('data/names.pkl', 'wb') as file:
         pickle.dump(names, file)
 
